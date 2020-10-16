@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { StyleSheet, Text, View, TextInput } from 'react-native';
+import { StyleSheet,View, Platform, KeyboardAvoidingView } from 'react-native';
 import io from "socket.io-client";
+import { GiftedChat } from 'react-native-gifted-chat'
 
 const HomeScreen = () => {
   const [messageToSend, setMessageToSend] = useState("");
@@ -8,37 +9,62 @@ const HomeScreen = () => {
   const socket = useRef(null);
 
   useEffect(() => {
-    socket.current = io("http://192.168.0.29:3001");
+    socket.current = io("http://119.192.254.2:3001");
     socket.current.on("message", message => {
-      setRecvMessages(prevState => [...prevState, message]);
-      //... == spread operator
-      //going to take this prevstate as it is, and then append newmessage onto it
-      //["Hello", "Hello there"] "Another hello" 
-      //["Hello", "Hello there", "Another hello"]
+      const testMessage = {
+        _id: 3,
+        text: 'Hello developer',
+        createdAt: new Date(),
+        user: {
+          _id: 2,
+          name: 'React Native',
+          avatar: 'https://placeimg.com/140/140/any',
+        }
+      };
+      testMessage.text = message;
+      setRecvMessages(prevState => [...prevState, testMessage]);
     });
+    setRecvMessages([
+      {
+        _id: 1,
+        text: 'Hello developer',
+        createdAt: new Date(),
+        user: {
+          _id: 2,
+          name: 'React Native',
+          avatar: 'https://placeimg.com/140/140/any',
+        }
+      },
+      {
+        _id: 2,
+        text: 'Hello from myself',
+        createdAt: new Date(),
+        user: {
+          _id: 1,
+          name: 'React Native',
+          avatar: 'https://placeimg.com/140/140/any',
+        }
+      }
+    ])
   }, []);
 
-  const sendMessage = () => {
-    socket.current.emit("message", messageToSend);
-    setMessageToSend("");
+  const onSend = (messages) => {
+    console.log(messages);
+    socket.current.emit("message", messages[0].text);
   };
-
-  const textOfRecvMessages = recvMessages.map(msg => (
-    <Text key={msg}>
-      {msg}
-    </Text>
-  ));
   
   return (
-    <View style={styles.container}>
-      {textOfRecvMessages}
-      <TextInput
-        style = {styles.inputStyle}
-        value={messageToSend} 
-        onChangeText={text => setMessageToSend(text)}
-        placeholder="Enter chat message.." 
-        onSubmitEditing={sendMessage}
+    <View style={{flex:1}}>
+      <GiftedChat
+        messages={recvMessages}
+        onSend={messages => onSend(messages)}
+        user={{
+          _id: 1,
+        }}
       />
+      {
+        Platform.OS === 'android' && <KeyboardAvoidingView behavior="padding" />
+      }
     </View>
   );
 }
@@ -55,7 +81,7 @@ const styles = StyleSheet.create({
     alignSelf: 'stretch'
   },
   textStyle:{
-    
+
   }
 });
 
