@@ -53,6 +53,9 @@ const styles = StyleSheet.create({
   inputStyle:{
     fontSize : 18,
     alignSelf: 'stretch'
+  },
+  textStyle:{
+    
   }
 });
 
